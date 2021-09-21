@@ -11,10 +11,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.text.Editable
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
@@ -25,6 +25,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.drawToBitmap
 import com.example.medlcx_android_code_test.model.URLImageInfo
 import com.example.medlcx_android_code_test.utils.Constant
 import com.example.medlcx_android_code_test.utils.MethodUtils
@@ -58,11 +59,13 @@ class MainActivity : AppCompatActivity() {
         webView = findViewById(R.id.id_web_view)
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
+                Log.e("RashidShafee", "onPageFinished")
                 tempImageView.visibility = View.GONE
                 webView.visibility = View.VISIBLE
             }
         }
         webView.settings.javaScriptEnabled = true
+
 
         urlText = findViewById(R.id.id_url_text)
         tempImageView = findViewById(R.id.id_temp_image_view)
@@ -86,28 +89,28 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadWebView() {
         if(urlText.text.isEmpty()) {
-            Toast.makeText(this, "Please enter the url", Toast.LENGTH_LONG).show()
+            MethodUtils.showDialog(this, "Please enter the url to load")
         } else {
-            //https://rashshafee29.github.io/
             webView.loadUrl(urlText.text.toString())
         }
     }
 
     private fun captureWebView() {
-        bitmap =
-            Bitmap.createBitmap(webView.width, webView.height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        webView.draw(canvas)
-        setupPermissions()
+        if(urlText.text.isEmpty()) {
+            MethodUtils.showDialog(this, "Please enter the url to load")
+        } else {
+            bitmap =  webView.drawToBitmap()
+            setupPermissions()
+        }
     }
 
     private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            // There are no request codes
+            Log.e("RashidShafee","registerForActivityResult")
             val data: Intent? = result.data
-            val resultURLText = data!!.getCharSequenceExtra("returnUrl")
+            val resultURLText = data!!.getCharSequenceExtra(Constant.RETURN_URL)
             urlText.setText(resultURLText)
-            val resultImageName = data.getCharSequenceExtra("returnImageName")
+            val resultImageName = data.getCharSequenceExtra(Constant.RETURN_IMAGE_NAME)
             val imageUri = MethodUtils.getImageFromMediaStore(this, resultImageName.toString())
             tempImageView.setImageURI(imageUri)
             tempImageView.visibility = View.VISIBLE
@@ -147,8 +150,10 @@ class MainActivity : AppCompatActivity() {
                     val urlImageInfo = URLImageInfo(urlText.text.toString(), date,
                         imageDetails[MediaStore.Images.Media.DISPLAY_NAME].toString()
                     )
+                    urlImageInfoList = Hawk.get(Constant.HAWK_TOKEN_KEY)
                     urlImageInfoList.add(urlImageInfo)
                     Hawk.put(Constant.HAWK_TOKEN_KEY, urlImageInfoList)
+                    MethodUtils.showDialog(this, "Capture done and saved")
                 } ?: throw IOException("Failed to get output stream.")
             } ?: throw IOException("Failed to create new MediaStore record.")
         } catch (e: IOException) {
@@ -185,10 +190,10 @@ class MainActivity : AppCompatActivity() {
 
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
 
-                    Log.i("SendServer", "Permission has been denied by user")
+                    Log.i("RequestInfo", "Permission has been denied by user")
                 } else {
                     saveBitmapAsImageToDevice(bitmap)
-                    Log.i("SendServer", "Permission has been granted by user")
+                    Log.i("RequestInfo", "Permission has been granted by user")
                 }
             }
         }

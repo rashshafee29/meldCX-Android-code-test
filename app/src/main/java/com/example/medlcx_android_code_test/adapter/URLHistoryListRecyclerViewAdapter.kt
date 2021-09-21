@@ -1,6 +1,7 @@
 package com.example.medlcx_android_code_test.adapter
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.text.format.DateFormat
 import android.util.Log
@@ -30,7 +31,6 @@ import com.orhanobut.hawk.Hawk
 import java.util.*
 import kotlin.collections.ArrayList
 
-
 class URLHistoryListRecyclerViewAdapter(private var context: Context, private var urlImageInfoList: ArrayList<URLImageInfo>)
     : RecyclerView.Adapter<URLHistoryListRecyclerViewAdapter.URLHistoryListViewHolder>(), Filterable{
 
@@ -48,29 +48,47 @@ class URLHistoryListRecyclerViewAdapter(private var context: Context, private va
         return URLHistoryListViewHolder(view)
     }
 
+    private fun sendDataBack(position: Int) {
+        val returnIntent = Intent()
+        returnIntent.putExtra(Constant.RETURN_URL, urlImageInfoList[position].url)
+        returnIntent.putExtra(Constant.RETURN_IMAGE_NAME, urlImageInfoList[position].imageName)
+        (context as Activity).setResult(Activity.RESULT_OK, returnIntent)
+        (context as Activity).finish()
+    }
+
     override fun onBindViewHolder(holder: URLHistoryListViewHolder, position: Int) {
         holder.urlTextView.text = urlImageInfoList[position].url
         holder.urlTextView.setOnClickListener {
-            val returnIntent = Intent()
-            returnIntent.putExtra("returnUrl", urlImageInfoList[position].url)
-            returnIntent.putExtra("returnImageName", urlImageInfoList[position].imageName)
-            (context as Activity).setResult(Activity.RESULT_OK, returnIntent)
-            (context as Activity).finish()
+            sendDataBack(position)
         }
         val date = urlImageInfoList[position].date
         val dateTime = DateFormat.format("MMMM dd, yyyy hh:mm a", date)
         holder.dateTextView.text = dateTime
         holder.imageHolder.setImageURI(null)
         val uri = MethodUtils.getImageFromMediaStore(context, urlImageInfoList[position].imageName)
-        Log.e("RashidShafee","uri: " + uri)
         holder.imageHolder.setImageURI(uri)
-        holder.deleteBtn.setOnClickListener {
-            urlImageInfoList.remove(urlImageInfoList[position])
-            notifyItemRemoved(position)
-            urlImageInfoList.reverse()
-            Hawk.put(Constant.HAWK_TOKEN_KEY, urlImageInfoList)
-            urlImageInfoList.reverse()
+        holder.imageHolder.setOnClickListener {
+            sendDataBack(position)
         }
+
+        holder.deleteBtn.setOnClickListener {
+            AlertDialog.Builder(context)
+                .setTitle("Do you want to delete this item?")
+                .setPositiveButton("YES") { dialogInterface, _ ->
+                    deleteAndUpdateDB(position)
+                    dialogInterface.dismiss()
+                }.setNegativeButton("NO") { dialogInterface,_ ->
+                    dialogInterface.dismiss()
+                }.show()
+        }
+    }
+
+    private fun deleteAndUpdateDB(position: Int) {
+        urlImageInfoList.remove(urlImageInfoList[position])
+        urlImageInfoList.reverse()
+        Hawk.put(Constant.HAWK_TOKEN_KEY, urlImageInfoList)
+        urlImageInfoList.reverse()
+        notifyItemRemoved(position)
     }
 
     override fun getItemCount(): Int {
@@ -105,7 +123,6 @@ class URLHistoryListRecyclerViewAdapter(private var context: Context, private va
                 urlImageInfoList.addAll(results?.values as ArrayList<URLImageInfo>)
                 notifyDataSetChanged()
             }
-
         }
     }
 }

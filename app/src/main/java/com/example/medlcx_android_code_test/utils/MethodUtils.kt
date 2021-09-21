@@ -1,7 +1,9 @@
 package com.example.medlcx_android_code_test.utils
 
+import android.app.AlertDialog
 import android.content.ContentUris
 import android.content.Context
+import android.content.DialogInterface
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -50,16 +52,21 @@ object MethodUtils {
                             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                             id)
                     }
-                    Log.e("RashidShafee","name: " + name)
-                    Log.e("RashidShafee","findFileByName: " + findFileByName)
                     if(findFileByName == name) {
-                        Log.e("RashidShafee","Images: $id $name $contentUri")
                         return contentUri
                     }
                 }
             }?: kotlin.run {
-                Log.e("TAG", "Cursor is null!") }
+                Log.e("ErrorInfo: ", "Cursor is null!") }
         }
         return cUri
+    }
+
+    fun showDialog(context: Context, titleText: String) {
+        AlertDialog.Builder(context)
+            .setTitle(titleText)
+            .setPositiveButton("OK") { dialogInterface, _ ->
+                dialogInterface.dismiss()
+            }.show()
     }
 }
