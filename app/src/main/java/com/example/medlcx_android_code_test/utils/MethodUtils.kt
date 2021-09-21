@@ -3,15 +3,19 @@ package com.example.medlcx_android_code_test.utils
 import android.app.AlertDialog
 import android.content.ContentUris
 import android.content.Context
-import android.content.DialogInterface
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 
+/**
+ * Util object for common methods
+ */
 object MethodUtils {
+    /**
+     * Method to get the Image Uri from storage by image name
+     */
     fun getImageFromMediaStore(appContext: Context, findFileByName : String): Uri {
-
         val imageProjection = arrayOf(
             MediaStore.Images.Media._ID,
             MediaStore.Images.Media.DISPLAY_NAME)
@@ -53,7 +57,7 @@ object MethodUtils {
                             id)
                     }
                     if(findFileByName == name) {
-                        return contentUri
+                        return contentUri //if got the file return the URI
                     }
                 }
             }?: kotlin.run {
@@ -62,7 +66,10 @@ object MethodUtils {
         return cUri
     }
 
-    fun showDialog(context: Context, titleText: String) {
+    /**
+     * Show simple information dialog
+     */
+    fun showInfoDialog(context: Context, titleText: String) {
         AlertDialog.Builder(context)
             .setTitle(titleText)
             .setPositiveButton("OK") { dialogInterface, _ ->

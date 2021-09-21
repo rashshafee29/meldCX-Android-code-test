@@ -77,7 +77,6 @@
                     android:id="@+id/id_image_view"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
                     android:background="@drawable/border_bg"
                     tool:src="@drawable/ic_launcher_background"/>
             </androidx.constraintlayout.widget.ConstraintLayout>

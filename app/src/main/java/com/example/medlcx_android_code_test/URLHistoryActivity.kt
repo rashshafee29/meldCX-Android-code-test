@@ -2,7 +2,6 @@ package com.example.medlcx_android_code_test
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.RecoverySystem
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.SearchView
@@ -24,6 +23,7 @@ class URLHistoryActivity : AppCompatActivity() {
         val recyclerView: RecyclerView = findViewById(R.id.id_recycler_view)
         val layoutManager = LinearLayoutManager(applicationContext)
         recyclerView.layoutManager = layoutManager
+
         val any: Any? = Hawk.get(Constant.HAWK_TOKEN_KEY)
         if(any == null) {
             urlImageInfoList = ArrayList()
@@ -31,11 +31,17 @@ class URLHistoryActivity : AppCompatActivity() {
         } else {
             urlImageInfoList = Hawk.get(Constant.HAWK_TOKEN_KEY)
         }
-        urlImageInfoList.reverse()
+
+        urlImageInfoList.reverse() //reversing the list to show latest data at first
+
         urlHistoryListRecyclerViewAdapter = URLHistoryListRecyclerViewAdapter(this, urlImageInfoList)
-        recyclerView.adapter = urlHistoryListRecyclerViewAdapter
+        recyclerView.adapter = urlHistoryListRecyclerViewAdapter //setting the adapter to recycler view
     }
 
+    /**
+     * Inflate search view on menu bar
+     * filtering the list in recycler view with search text
+     */
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val inflater = menuInflater
         inflater.inflate(R.menu.search_layout, menu)
